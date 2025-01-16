@@ -37,7 +37,7 @@ def get_conversation(session_id: str) -> dict[str, list[str]]:
     res = query_db(f"SELECT role, counter, msg FROM conversations WHERE session_id = '{session_id}' AND status = 'complete'")
         
     output = {}
-    for row in res.fetchall():
+    for row in res:
         if row[0] not in output:
             output[row[0]] = []
         output[row[0]].append((row[1], row[2]))
@@ -51,7 +51,7 @@ def get_conversation(session_id: str) -> dict[str, list[str]]:
 def is_pending(session_id: str) -> bool:
 
     results = query_db(f"SELECT status FROM conversations WHERE session_id = '{session_id}' AND status = 'pending'")
-    return len(results) == 0
+    return len(results) != 0
 
 def sanitize_strings(in_str: str) -> str:
 
@@ -65,8 +65,7 @@ def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) ->
     with closing(sqlite3.connect(DATABASE)) as db_con:
         with db_con:
             res = db_con.execute(f"SELECT max(counter) FROM conversations WHERE session_id = '{session_id}' AND role = '{role}'")
-            old_counter = res.fetchone()
-            breakpoint()
+            old_counter = res.fetchone()[0]
             if old_counter is None:
                 counter = 0
             else:
@@ -102,7 +101,10 @@ def my_conversation():
             return {'status': 'error'}
         add_msg(session['session_id'], session['agent_id'], 'user', content['msg'], 'pending')
 
-    return {'status': 'complete', 'pending': pending, 'conversation': get_conversation(session['session_id'])}
+    
+    result = {'status': 'complete', 'pending': pending, 'conversation': get_conversation(session['session_id'])}
+    print(result)
+    return result
 
 @app.route('/chat', methods=['GET'])
 def chat_page():
