@@ -45,9 +45,9 @@ function updateDisplay(conversation) {
     let send_button = document.getElementById("send_button");
 
     if (conversation.pending) {
-        send_button.setAttribute("enabled", "false");
+        send_button.disabled = true;
     } else {
-        send_button.setAttribute("enabled", "true");
+        send_button.disabled = false;
     }
 
     conversation_node.innerHTML = '';
@@ -74,7 +74,7 @@ async function load_page(agent_id) {
 
 async function sendMessage(agent_id) {
     let send_button = document.getElementById("send_button");
-    send_button.setAttribute("enabled", "false");
+    send_button.disabled = true;
     let input_field = document.getElementById("user_msg");
     let msg = input_field.value;
 
