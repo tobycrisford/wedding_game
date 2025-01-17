@@ -15,8 +15,6 @@ app = Flask(__name__)
 with open(SECRET_FILE,'r') as f:
     app.secret_key = f.read()
 
-db_con = sqlite3.connect(DATABASE)
-db_cursor = db_con.cursor()
 
 def initialize_database() -> None:
     with closing(sqlite3.connect(DATABASE)) as db_con:
@@ -30,11 +28,14 @@ def query_db(query: str):
 
     with closing(sqlite3.connect(DATABASE)) as db_con:
         with db_con:
-            return db_con.execute(query).fetchall()
+            # print(query)
+            result = db_con.execute(query).fetchall()
+            # print(result)
+            return result
 
 def get_conversation(session_id: str) -> dict[str, list[str]]:
 
-    res = query_db(f"SELECT role, counter, msg FROM conversations WHERE session_id = '{session_id}' AND status = 'complete'")
+    res = query_db(f"SELECT role, counter, msg FROM conversations WHERE session_id = '{session_id}'")
         
     output = {}
     for row in res:
@@ -73,7 +74,7 @@ def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) ->
 
             db_con.execute(f"""
                 INSERT INTO conversations VALUES (
-                    '{session_id})',
+                    '{session_id}',
                     '{sanitize_strings(agent_id)}',
                     '{role}',
                     {counter},
