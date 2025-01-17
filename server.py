@@ -101,6 +101,7 @@ def my_conversation():
         if pending:
             return {'status': 'error'}
         add_msg(session['session_id'], session['agent_id'], 'user', content['msg'], 'pending')
+        pending = True
 
     
     result = {'status': 'complete', 'pending': pending, 'conversation': get_conversation(session['session_id'])}

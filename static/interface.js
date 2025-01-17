@@ -24,6 +24,9 @@ function createMessageArray(conversation) {
     let conv = conversation.conversation;
     for (let i = 0;i < conv['agent'].length;i++) {
         for (const role of ['agent', 'user']) {
+            if (!(role in conv)) {
+                continue;
+            }
             if (i < conv[role].length) {
                 messages.push({role: role, txt: conv[role][i]});
             }
@@ -39,6 +42,14 @@ function createMessageArray(conversation) {
 
 function updateDisplay(conversation) {
     let conversation_node = document.getElementById("messages");
+    let send_button = document.getElementById("send_button");
+
+    if (conversation.pending) {
+        send_button.setAttribute("enabled", "false");
+    } else {
+        send_button.setAttribute("enabled", "true");
+    }
+
     conversation_node.innerHTML = '';
 
     let messages = createMessageArray(conversation);
@@ -48,6 +59,16 @@ function updateDisplay(conversation) {
         msg_element.setAttribute("class", "msg_" + msg.role);
         msg_element.innerText = msg.txt;
         conversation_node.appendChild(msg_element);
+    }
+}
+
+async function load_page(agent_id) {
+    try {
+        let conversation = await fetchConversation(null, agent_id);
+        updateDisplay(conversation);
+    }
+    catch (error) {
+        console.error(error.toString());
     }
 }
 
@@ -65,6 +86,4 @@ async function sendMessage(agent_id) {
     catch (error) {
         console.error(error.toString());
     }
-
-    send_button.setAttribute("enabled", "true");
 }
