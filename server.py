@@ -22,7 +22,7 @@ def initialize_database() -> None:
             try:
                 db_con.execute("SELECT session_id FROM conversations")
             except sqlite3.OperationalError:
-                db_con.execute("CREATE TABLE conversations(session_id, agent_id, role, counter, msg, status)")
+                db_con.execute("CREATE TABLE conversations(session_id, agent_id, role, msg, status)")
 
 def query_db(query: str):
 
@@ -35,7 +35,7 @@ def query_db(query: str):
 
 def get_conversation(session_id: str) -> dict[str, list[str]]:
 
-    res = query_db(f"SELECT role, counter, msg FROM conversations WHERE session_id = '{session_id}'")
+    res = query_db(f"SELECT role, rowid, msg FROM conversations WHERE session_id = '{session_id}'")
         
     output = {}
     for row in res:
@@ -65,19 +65,11 @@ def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) ->
     
     with closing(sqlite3.connect(DATABASE)) as db_con:
         with db_con:
-            res = db_con.execute(f"SELECT max(counter) FROM conversations WHERE session_id = '{session_id}' AND role = '{role}'")
-            old_counter = res.fetchone()[0]
-            if old_counter is None:
-                counter = 0
-            else:
-                counter = old_counter[0] + 1
-
             db_con.execute(f"""
                 INSERT INTO conversations VALUES (
                     '{session_id}',
                     '{sanitize_strings(agent_id)}',
                     '{role}',
-                    {counter},
                     '{sanitize_strings(msg)}',
                     '{status}'
                 )
