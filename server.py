@@ -4,6 +4,7 @@ import secrets
 from contextlib import closing
 
 from prompts import agent_initial_message
+from db_utils import sanitize_strings
 
 DATABASE = "conversations.db"
 SECRET_FILE = "secrets.txt"
@@ -54,12 +55,10 @@ def is_pending(session_id: str) -> bool:
     results = query_db(f"SELECT status FROM conversations WHERE session_id = '{session_id}' AND status = 'pending'")
     return len(results) != 0
 
-def sanitize_strings(in_str: str) -> str:
-
-    return in_str.replace("'", "\\'")
-
 def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) -> None:
 
+    print("Adding message")
+    
     if status not in ('pending', 'complete'):
         raise Exception("Status can only be 'pending' or 'complete'")
     
