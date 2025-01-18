@@ -1,12 +1,17 @@
 <html>
     <head>
         <script src="static/interface.js"></script>
+        <link rel="stylesheet" href="static/conversation.css">
     </head>
     <body>
         <div class="messages" id="messages"></div>
-        <div class="next_message">
-            <input type="text" id="user_msg">
-            <button id="send_button" onclick="sendMessage('toby');">Send</button>
+        <div class="user_input">
+            <div class="next_message">
+                <textarea rows="5" cols="60" placeholder="Your message" id="user_msg"></textarea>
+            </div>
+            <div class="send_button">
+                <button id="send_button" onclick="sendMessage('toby');">Send</button>
+            </div>
         </div>
         <script>page_loader('toby');</script>
     </body>
