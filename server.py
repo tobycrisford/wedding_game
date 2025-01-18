@@ -23,7 +23,16 @@ def initialize_database() -> None:
             try:
                 db_con.execute("SELECT session_id FROM conversations")
             except sqlite3.OperationalError:
-                db_con.execute("CREATE TABLE conversations(session_id, agent_id, role, msg, status)")
+                db_con.execute("""
+                    CREATE TABLE conversations(
+                        rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+                        session_id TEXT,
+                        agent_id TEXT,
+                        role TEXT,
+                        msg TEXT,
+                        status TEXT
+                    )
+                """)
 
 def query_db(query: str):
 
@@ -65,7 +74,7 @@ def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) ->
     with closing(sqlite3.connect(DATABASE)) as db_con:
         with db_con:
             db_con.execute(f"""
-                INSERT INTO conversations VALUES (
+                INSERT INTO conversations (session_id, agent_id, role, msg, status) VALUES (
                     '{session_id}',
                     '{sanitize_strings(agent_id)}',
                     '{role}',

@@ -41,6 +41,9 @@ def clean_pending(pending_msgs: pd.DataFrame) -> pd.DataFrame:
 
     return pending_msgs[pending_msgs['rowid'].isin(rows_to_keep)]
 
+def fetch_whole_conversation(session_id: str, agent_id: str) -> list[dict[str,str]]:
+
+    pass
 
 def generate_response(row: pd.Series) -> str:
 
@@ -50,7 +53,7 @@ def update_row_with_response(row: pd.Series, response: str) -> None:
 
     with db_con:
         db_con.execute(f"""
-            INSERT INTO conversations VALUES (
+            INSERT INTO conversations (session_id, agent_id, role, msg, status) VALUES (
                 '{row['session_id']}',
                 '{row['agent_id']}',
                 'agent',
