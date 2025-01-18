@@ -43,9 +43,9 @@ def query_db(query: str):
             # print(result)
             return result
 
-def get_conversation(session_id: str) -> dict[str, list[str]]:
+def get_conversation(session_id: str, agent_id: str) -> dict[str, list[str]]:
 
-    res = query_db(f"SELECT role, rowid, msg FROM conversations WHERE session_id = '{session_id}'")
+    res = query_db(f"SELECT role, rowid, msg FROM conversations WHERE session_id = '{session_id}' AND agent_id = '{agent_id}';")
         
     output = {}
     for row in res:
@@ -59,9 +59,9 @@ def get_conversation(session_id: str) -> dict[str, list[str]]:
 
     return output
 
-def is_pending(session_id: str) -> bool:
+def is_pending(session_id: str, agent_id: str) -> bool:
 
-    results = query_db(f"SELECT status FROM conversations WHERE session_id = '{session_id}' AND status = 'pending'")
+    results = query_db(f"SELECT status FROM conversations WHERE session_id = '{session_id}' AND agent_id = '{agent_id}' AND status = 'pending'")
     return len(results) != 0
 
 def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) -> None:
@@ -89,22 +89,22 @@ def my_conversation():
 
     if 'session_id' not in session:
         session['session_id'] = secrets.token_urlsafe(SESSION_ID_LENGTH)
-        session['agent_id'] = content['agent_id']
-        add_msg(session['session_id'], session['agent_id'], 'agent', agent_initial_message, 'complete')
 
-    if not (session['agent_id'] == content['agent_id']):
-        return {'status': 'error'}
+    conversation = get_conversation(session['session_id'], content['agent_id'])
+    if len(conversation) == 0:
+        add_msg(session['session_id'], content['agent_id'], 'agent', agent_initial_message, 'complete')
+        conversation = get_conversation(session['session_id'], content['agent_id'])
 
-    pending = is_pending(session['session_id'])
+    pending = is_pending(session['session_id'], content['agent_id'])
     
     if 'msg' in content:
         if pending:
             return {'status': 'error'}
-        add_msg(session['session_id'], session['agent_id'], 'user', content['msg'], 'pending')
+        add_msg(session['session_id'], content['agent_id'], 'user', content['msg'], 'pending')
         pending = True
+        conversation = get_conversation(session['session_id'], content['agent_id'])
 
-    
-    result = {'status': 'complete', 'pending': pending, 'conversation': get_conversation(session['session_id'])}
+    result = {'status': 'complete', 'pending': pending, 'conversation': conversation}
     print(result)
     return result
 
