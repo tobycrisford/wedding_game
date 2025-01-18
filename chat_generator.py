@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-from prompts import system_prompt
+from prompts import agents
 from db_utils import sanitize_strings
 
 DATABASE = "conversations.db"
@@ -83,7 +83,7 @@ def fetch_whole_conversation(session_id: str, agent_id: str) -> list[dict[str,st
 
 def generate_response(row: pd.Series) -> str:
 
-    messages = [{'role': 'system', 'content': system_prompt}]
+    messages = [{'role': 'system', 'content': agents[row['agent_id']]['system_prompt']}]
     messages += fetch_whole_conversation(row['session_id'], row['agent_id'])
 
     output = pipe(messages, max_new_tokens=1024)

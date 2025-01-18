@@ -3,7 +3,7 @@ import sqlite3
 import secrets
 from contextlib import closing
 
-from prompts import agent_initial_message
+from prompts import agents
 from db_utils import sanitize_strings
 
 DATABASE = "conversations.db"
@@ -90,9 +90,12 @@ def my_conversation():
     if 'session_id' not in session:
         session['session_id'] = secrets.token_urlsafe(SESSION_ID_LENGTH)
 
+    if content['agent_id'] not in agents:
+        return {'status': 'error'}
+
     conversation = get_conversation(session['session_id'], content['agent_id'])
     if len(conversation) == 0:
-        add_msg(session['session_id'], content['agent_id'], 'agent', agent_initial_message, 'complete')
+        add_msg(session['session_id'], content['agent_id'], 'agent', agents[content['agent_id']]['agent_initial_message'], 'complete')
         conversation = get_conversation(session['session_id'], content['agent_id'])
 
     pending = is_pending(session['session_id'], content['agent_id'])
