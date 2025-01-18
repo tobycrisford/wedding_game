@@ -3,10 +3,34 @@ import time
 
 import pandas as pd
 import numpy as np
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
+from prompts import system_prompt
 from db_utils import sanitize_strings
 
 DATABASE = "conversations.db"
+model_id = "unsloth/Llama-3.2-3B-Instruct"
+
+tokenizer = AutoTokenizer.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,
+)
+
+# Load model with quantization
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,
+    device_map="auto",
+)
+
+pipe = pipeline(
+    "text-generation",
+    model=model,
+    tokenizer=tokenizer,
+    torch_dtype=torch.bfloat16,
+    device_map="auto",
+)
 
 db_con = sqlite3.connect(DATABASE)
 
@@ -43,11 +67,29 @@ def clean_pending(pending_msgs: pd.DataFrame) -> pd.DataFrame:
 
 def fetch_whole_conversation(session_id: str, agent_id: str) -> list[dict[str,str]]:
 
-    pass
+    with db_con:
+        conv = db_con.execute(f"""
+            SELECT role, msg FROM conversations
+            WHERE session_id = '{session_id}' AND agent_id = '{agent_id}'
+            ORDER BY rowid
+        """).fetchall()
+
+    messages = [
+        {'role': row[0], 'content': row[1]} for row in conv
+    ]
+
+    return messages
+
 
 def generate_response(row: pd.Series) -> str:
 
-    return np.random.choice(['Hmm...', 'Hello there', 'I am the globglogabgalab'])
+    messages = [{'role': 'system', 'content': system_prompt}]
+    messages += fetch_whole_conversation(row['session_id'], row['agent_id'])
+
+    output = pipe(messages, max_new_tokens=1024)
+    response = output[0]['generated_text'][-1]['content']
+    
+    return response
 
 def update_row_with_response(row: pd.Series, response: str) -> None:
 
@@ -67,11 +109,14 @@ def update_row_with_response(row: pd.Series, response: str) -> None:
         """)
 
 
+print("Listening for responses to process...")
 while True:
 
     pending_rows = clean_pending(get_pending())
     for idx, row in pending_rows.iterrows():
+        print(f"Generating new response for {row['msg']}")
         response = generate_response(row)
         update_row_with_response(row, response)
+        print("New response generated.")
 
     time.sleep(10)
