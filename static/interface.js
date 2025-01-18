@@ -72,6 +72,13 @@ async function load_page(agent_id) {
     }
 }
 
+function page_loader(agent_id) {
+    load_page(agent_id);
+    const pollInterval = setInterval(() => {
+        load_page(agent_id)
+    }, 15000); // Poll every 5 seconds
+}
+
 async function sendMessage(agent_id) {
     let send_button = document.getElementById("send_button");
     send_button.disabled = true;
