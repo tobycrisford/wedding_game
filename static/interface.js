@@ -34,7 +34,7 @@ function createMessageArray(conversation) {
     }
 
     if (conversation.pending) {
-        messages.push({role: 'system', txt: 'Waiting for response'});
+        messages.push({role: 'system', txt: "Waiting for response. This may take a few minutes. You can close this page and check back later if you don't have time to wait."});
     }
 
     return messages;
