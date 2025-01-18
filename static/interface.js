@@ -1,3 +1,11 @@
+function get_agent_from_url() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    return urlParams.get('agent');
+}
+
+const agent_id = get_agent_from_url();
+
 async function fetchConversation(msg, agent_id) {
     let request_data = {agent_id: agent_id}
     if (msg !== null) {
@@ -72,14 +80,14 @@ async function load_page(agent_id) {
     }
 }
 
-function page_loader(agent_id) {
+function page_loader() {
     load_page(agent_id);
     const pollInterval = setInterval(() => {
         load_page(agent_id)
     }, 15000); // Poll every 5 seconds
 }
 
-async function sendMessage(agent_id) {
+async function sendMessage() {
     let send_button = document.getElementById("send_button");
     send_button.disabled = true;
     let input_field = document.getElementById("user_msg");
