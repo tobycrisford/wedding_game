@@ -52,7 +52,7 @@ def clean_pending(pending_msgs: pd.DataFrame) -> pd.DataFrame:
 
     rows_to_keep = set()
     
-    for session, df in pending_msgs.groupby('session_id'):
+    for session, df in pending_msgs.groupby(['session_id', 'agent_id']):
 
         df_sorted = df.sort_values('rowid')
         
