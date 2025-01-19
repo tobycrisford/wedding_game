@@ -3,34 +3,14 @@ import time
 
 import pandas as pd
 import numpy as np
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 from prompts import agents
 from db_utils import sanitize_strings
+from load_generation_pipeline import load_pipeline
 
 DATABASE = "conversations.db"
-model_id = "unsloth/Llama-3.2-3B-Instruct"
 
-tokenizer = AutoTokenizer.from_pretrained(
-    model_id,
-    torch_dtype=torch.bfloat16,
-)
-
-# Load model with quantization
-model = AutoModelForCausalLM.from_pretrained(
-    model_id,
-    torch_dtype=torch.bfloat16,
-    device_map="auto",
-)
-
-pipe = pipeline(
-    "text-generation",
-    model=model,
-    tokenizer=tokenizer,
-    torch_dtype=torch.bfloat16,
-    device_map="auto",
-)
+pipe = load_pipeline()
 
 db_con = sqlite3.connect(DATABASE)
 
@@ -109,14 +89,15 @@ def update_row_with_response(row: pd.Series, response: str) -> None:
         """)
 
 
-print("Listening for responses to process...")
-while True:
+if __name__ == "__main__":
+    print("Listening for responses to process...")
+    while True:
 
-    pending_rows = clean_pending(get_pending())
-    for idx, row in pending_rows.iterrows():
-        print(f"Generating new response for {row['msg']}")
-        response = generate_response(row)
-        update_row_with_response(row, response)
-        print("New response generated.")
+        pending_rows = clean_pending(get_pending())
+        for idx, row in pending_rows.iterrows():
+            print(f"Generating new response for {row['msg']}")
+            response = generate_response(row)
+            update_row_with_response(row, response)
+            print("New response generated.")
 
-    time.sleep(10)
+        time.sleep(10)
