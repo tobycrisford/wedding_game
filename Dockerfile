@@ -8,11 +8,11 @@ RUN pip install -r requirements.txt
 COPY load_generation_pipeline.py load_generation_pipeline.py
 RUN python load_generation_pipeline.py
 
-COPY *.py .
-COPY static .
-COPY templates .
-COPY secrets.txt secrets.txt
+COPY *.py ./chat_app/.
+COPY static ./chat_app/static/.
+COPY templates ./chat_app/templates/.
+COPY secrets.txt ./chat_app/secrets.txt
 
-COPY app_launch.sh app_launch.sh
-RUN chmod +x app_launch.sh
-CMD ["./app_launch.sh"]
+COPY app_launch.sh ./chat_app/app_launch.sh
+RUN chmod +x chat_app/app_launch.sh
+CMD ["./chat_app/app_launch.sh"]
