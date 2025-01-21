@@ -11,7 +11,7 @@ async function fetchConversation(msg, agent_id) {
     if (msg !== null) {
         request_data.msg = msg;
     }
-    const response = await fetch('/myconversation', {
+    const response = await fetch('/jmbwhpjsql_myconversation', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json'

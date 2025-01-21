@@ -83,7 +83,7 @@ def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) ->
                 )
             """)
 
-@app.route('/myconversation', methods=['POST'])
+@app.route('/jmbwhpjsql_myconversation', methods=['POST'])
 def my_conversation():
     content = request.json
 
@@ -111,7 +111,7 @@ def my_conversation():
     print(result)
     return result
 
-@app.route('/chat', methods=['GET'])
+@app.route('/jmbwhpjsql_chat', methods=['GET'])
 def chat_page():
 
     return render_template("index.html")
