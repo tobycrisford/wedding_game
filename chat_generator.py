@@ -95,9 +95,13 @@ if __name__ == "__main__":
 
         pending_rows = clean_pending(get_pending())
         for idx, row in pending_rows.iterrows():
-            print(f"Generating new response for {row['msg']}")
-            response = generate_response(row)
-            update_row_with_response(row, response)
-            print("New response generated.")
+            try:
+                print(f"Generating new response for {row['msg']}")
+                response = generate_response(row)
+                update_row_with_response(row, response)
+                print("New response generated.")
+            except Exception as e:
+                print(f"Error with {row}: {e}")
+                continue
 
         time.sleep(10)
