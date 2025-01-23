@@ -65,8 +65,6 @@ def is_pending(session_id: str, agent_id: str) -> bool:
     return len(results) != 0
 
 def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) -> None:
-
-    print("Adding message")
     
     if status not in ('pending', 'complete'):
         raise Exception("Status can only be 'pending' or 'complete'")
@@ -108,7 +106,6 @@ def my_conversation():
         conversation = get_conversation(session['session_id'], content['agent_id'])
 
     result = {'status': 'complete', 'pending': pending, 'conversation': conversation}
-    print(result)
     return result
 
 @app.route('/jmbwhpjsql_chat', methods=['GET'])
