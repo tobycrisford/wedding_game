@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, request, session, render_template
 import sqlite3
 import secrets
@@ -6,19 +8,16 @@ from contextlib import closing
 from prompts import agents
 from db_utils import sanitize_strings
 
-DATABASE = "conversations.db"
-SECRET_FILE = "secrets.txt"
-SESSION_ID_LENGTH = 10
+with open('server_config.json', 'r') as f:
+    server_config = json.load(f)
 
 # Create the Flask application
 app = Flask(__name__)
-
-with open(SECRET_FILE,'r') as f:
-    app.secret_key = f.read()
+app.secret_key = server_config["COOKIE_SECRET"]
 
 
 def initialize_database() -> None:
-    with closing(sqlite3.connect(DATABASE)) as db_con:
+    with closing(sqlite3.connect(server_config["DATABASE"])) as db_con:
         with db_con:
             try:
                 db_con.execute("SELECT session_id FROM conversations")
@@ -36,7 +35,7 @@ def initialize_database() -> None:
 
 def query_db(query: str):
 
-    with closing(sqlite3.connect(DATABASE)) as db_con:
+    with closing(sqlite3.connect(server_config["DATABASE"])) as db_con:
         with db_con:
             # print(query)
             result = db_con.execute(query).fetchall()
@@ -69,7 +68,7 @@ def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) ->
     if status not in ('pending', 'complete'):
         raise Exception("Status can only be 'pending' or 'complete'")
     
-    with closing(sqlite3.connect(DATABASE)) as db_con:
+    with closing(sqlite3.connect(server_config["DATABASE"])) as db_con:
         with db_con:
             db_con.execute(f"""
                 INSERT INTO conversations (session_id, agent_id, role, msg, status) VALUES (
@@ -86,7 +85,7 @@ def my_conversation():
     content = request.json
 
     if 'session_id' not in session:
-        session['session_id'] = secrets.token_urlsafe(SESSION_ID_LENGTH)
+        session['session_id'] = secrets.token_urlsafe(server_config["SESSION_ID_LENGTH"])
 
     if content['agent_id'] not in agents:
         return {'status': 'error'}
@@ -115,4 +114,7 @@ def chat_page():
 
 if __name__ == '__main__':
     initialize_database()
-    app.run(host='0.0.0.0')
+    if server_config["SSL_CERT"] is None:
+        app.run(host='0.0.0.0')
+    else:
+        app.run(host='0.0.0.0', ssl_context = (server_config["SSL_CERT"], server_config["SSL_KEY"]))
