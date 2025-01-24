@@ -83,6 +83,7 @@ def add_msg(session_id: str, agent_id: str, role: str, msg: str, status: str) ->
 @app.route('/jmbwhpjsql_myconversation', methods=['POST'])
 def my_conversation():
     content = request.json
+    session.permanent = True
 
     if 'session_id' not in session:
         session['session_id'] = secrets.token_urlsafe(server_config["SESSION_ID_LENGTH"])
