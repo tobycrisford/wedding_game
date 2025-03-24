@@ -5,6 +5,8 @@ function get_agent_from_url() {
 }
 
 const agent_id = get_agent_from_url();
+const archived_messages = [];
+let current_archive_pos = 0;
 
 async function fetchConversation(msg, agent_id) {
     let request_data = {agent_id: agent_id}
@@ -100,5 +102,40 @@ async function sendMessage() {
     }
     catch (error) {
         console.error(error.toString());
+    }
+}
+
+
+// Below functions are used to view archived conversation dump
+
+async function load_archive() {
+    if (archived_messages.length > 0) {
+        throw new Error('Messages already loaded');
+    }
+    const conv_dump = await fetch('conversation_dump.json');
+    const conv_dump_json = await conv_dump.json();
+    for (const conv_key in conv_dump_json) {
+        archived_messages.push(conv_dump_json[conv_key]);
+    }
+    update_archive_display();
+}
+
+function update_archive_display() {
+    const archive_location = document.getElementById('archive_index');
+    archive_location.textContent = (current_archive_pos + 1).toString() + '/' + archived_messages.length.toString();
+    updateDisplay(archived_messages[current_archive_pos]);
+}
+
+function display_next() {
+    if (current_archive_pos < archived_messages.length - 1) {
+        current_archive_pos += 1;
+        update_archive_display();
+    }
+}
+
+function display_prev() {
+    if (current_archive_pos > 0) {
+        current_archive_pos -= 1;
+        update_archive_display();
     }
 }

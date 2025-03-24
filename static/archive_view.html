@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <script src="interface.js"></script>
+        <link rel="stylesheet" href="conversation.css">
+    </head>
+    <body>
+        <div class="user_input">
+            <button onclick="display_prev();">Previous conversation</button>
+            <button onclick="display_next();">Next conversation</button>
+            <div id="archive_index"></div>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="user_input">
+            <div class="send_button">
+                <button id="send_button">Send is disabled in archived view</button>
+            </div>
+        </div>
+        <script>load_archive();</script>
+    </body>
+</html>
